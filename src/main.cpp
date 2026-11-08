@@ -5,7 +5,6 @@
 #include "../include/player.hpp"
 #include "../include/enemy.hpp"
 #include <vector>
-#include <cstddef>
 
 void DrawBackround()
 {
@@ -57,7 +56,7 @@ void InitBoard(Board board[][8], int n)
     {
         for (int j = 0; j < n; j++)
         {
-            if (i % 2 == 1 && j % 2 == 0 && i != 1)
+            if (i % 2 == 1 && j % 2 == 0)
 
                 board[i][j] = EnemyPiece;
             if (i % 2 == 0 && j % 2 == 1)
@@ -95,34 +94,51 @@ void DrawPieces(Board board[][8], int n)
     }
 }
 
-std::vector<Vector2> GetEnemyPiecesIndexes(Board board[][8], int n)
+std::vector<std::tuple<Vector2, Board>> GetEnemyPiecesIndexes(Board board[][8], int n)
 {
-    std::vector<Vector2> indexes;
+    std::vector<std::tuple<Vector2, Board>> indexes;
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
             if (board[i][j] == EnemyPiece || board[i][j] == EnemyKing)
             {
-                indexes.push_back((Vector2){static_cast<float>(j), static_cast<float>(i)});
+                std::tuple<Vector2, Board> temp{
+                    Vector2{static_cast<float>(j), static_cast<float>(i)},
+                    board[i][j]};
+                indexes.push_back(temp);
             }
         }
     }
     return indexes;
 }
 
-std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::set<std::pair<int, int>>> set)
+std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::set<std::pair<int, int>>> set, std::vector<Board> pieceTypeVector)
 {
     unsigned length = 0;
     int index = 0;
     std::set<std::pair<int, int>> longest;
     for (unsigned i = 0; i < set.size(); i++)
     {
-        if (set[i].size() >= length)
+        if (pieceTypeVector[i] == EnemyPiece)
         {
-            length = set[i].size();
-            longest = set[i];
-            index = static_cast<int>(i);
+
+        
+            if (set[i].size() >= length)
+            {
+                length = set[i].size();
+                longest = set[i];
+                index = static_cast<int>(i);
+            }
+        }
+        else if (pieceTypeVector[i] == EnemyKing)
+        {
+            if (set[i].size()/3 >= length)
+            {
+                length = set[i].size();
+                longest = set[i];
+                index = static_cast<int>(i);
+            }
         }
     }
     return {longest, index};
@@ -177,20 +193,22 @@ int main()
         }
         else
         {
-            std::vector<Vector2> pieces = GetEnemyPiecesIndexes(board, SIDE);
+            std::vector<std::tuple<Vector2, Board>> pieces = GetEnemyPiecesIndexes(board, SIDE);
             std::vector<std::set<std::pair<int, int>>> set;
+            std::vector<Board> pieceTypeVector;
             for (auto piece : pieces)
             {
                 std::set<std::pair<int, int>> tempSet;
-                enemy::getPossibleMoves(board, piece, tempSet);
+                enemy::getPossibleMoves(board, std::get<0>(piece), tempSet);
                 set.push_back(tempSet);
+                pieceTypeVector.push_back(std::get<1>(piece));
             }
             if (!pieces.empty())
             {
-                auto [theSet, longestIndex] = GetLongestSet(set);
+                auto [theSet, longestIndex] = GetLongestSet(set, pieceTypeVector);
                 if (!theSet.empty())
                 {
-                    Vector2 chosenPiece = pieces[longestIndex];
+                    Vector2 chosenPiece = std::get<0>(pieces[longestIndex]);
                     Vector2 chosenDestination = GetMoveDestination(chosenPiece, theSet);
                     enemy::moveEnemy(theSet, board, chosenPiece, chosenDestination);
                 }
