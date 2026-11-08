@@ -69,10 +69,10 @@ SavedBoard loadGame()
     return returnBoard;
 }
 
-void ClearSave()
+/*void ClearSave()
 {
     std::ofstream file("save.txt", std::ios::trunc);
     if (!file)
         exit(EXIT_FAILURE);
     file.close();
-}
+}*/

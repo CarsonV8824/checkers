@@ -10,4 +10,4 @@ void SaveGame(Board board[][SIDE]);
 
 SavedBoard loadGame();
 
-void ClearSave();
+//void ClearSave();
