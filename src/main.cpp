@@ -113,12 +113,12 @@ std::vector<Vector2> GetEnemyPiecesIndexes(Board board[][8], int n)
 
 std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::set<std::pair<int, int>>> set)
 {
-    std::size_t length = 0;
+    unsigned length = 0;
     int index = 0;
     std::set<std::pair<int, int>> longest;
-    for (std::size_t i = 0; i < set.size(); i++)
+    for (unsigned i = 0; i < set.size(); i++)
     {
-        if (set[i].size() > length)
+        if (set[i].size() >= length)
         {
             length = set[i].size();
             longest = set[i];
