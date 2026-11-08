@@ -133,7 +133,7 @@ std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::se
         }
         else if (pieceTypeVector[i] == EnemyKing)
         {
-            if (set[i].size() / 2 >= length)
+            if ((int)(set[i].size() / 2.5f) >= length)
             {
                 length = set[i].size();
                 longest = set[i];
@@ -152,7 +152,7 @@ Vector2 GetMoveDestination(Vector2 start, std::set<std::pair<int, int>> theSet)
     {
         int distance = std::abs(static_cast<int>(start.x) - spot.first) +
                        std::abs(static_cast<int>(start.y) - spot.second);
-        if (distance > largest)
+        if (distance >= largest)
         {
             largest = distance;
             returnVec = (Vector2){static_cast<float>(spot.first), static_cast<float>(spot.second)};
@@ -161,7 +161,7 @@ Vector2 GetMoveDestination(Vector2 start, std::set<std::pair<int, int>> theSet)
     return returnVec;
 }
 
-bool checkForWin(Board board[SIDE][SIDE])
+std::tuple<bool, int, int> checkForWin(Board board[SIDE][SIDE])
 {
     short unsigned playerPieces = 0;
     short unsigned enemyPieces = 0;
@@ -176,7 +176,7 @@ bool checkForWin(Board board[SIDE][SIDE])
         }
     }
     bool returnBool = !playerPieces || !enemyPieces;
-    return returnBool;
+    return {returnBool, playerPieces, enemyPieces};
 }
 
 int main()
@@ -207,8 +207,6 @@ int main()
     InitWindow(ScreenSide, ScreenSide, "raylib [core] example - basic window");
 
     SetTargetFPS(60);
-    bool endCondition = false;
-    bool resetKeyPressed = false;
     while (!WindowShouldClose())
     {
         if (turn % 2 == 0)
@@ -257,22 +255,33 @@ int main()
         DrawPieces(board, SIDE);
         player::DrawMoveRects(possibleSpotsToMove);
 
-        EndDrawing();
-
-        endCondition = checkForWin(board);
+        auto [tempCheck, playerPieces, enemyPieces] = checkForWin(board);
+        
         if (IsKeyPressed(KEY_R))
         {
-            resetKeyPressed = true;
             InitBoard(board, SIDE);
         }
+
+        if (playerPieces == 0)
+        {
+            const static int font = 40;
+            const static int size = MeasureText("You Lost! Press r to restart", font);
+
+            DrawText("You Lost! Press r to restart", ScreenSide / 2 - size / 2, ScreenSide / 2, font, WHITE);
+        }
+
+        if (enemyPieces == 0)
+        {
+            const static int font = 40;
+            const static int size = MeasureText("You Won! Press r to restart", font);
+            DrawText("You Won! Press r to restart", ScreenSide / 2 - size / 2, ScreenSide / 2, font, WHITE);
+        }
+        EndDrawing();
     }
 
     CloseWindow();
-    if (!endCondition)
-        SaveGame(board);
-    if (endCondition)
-        ClearSave();
-    if (resetKeyPressed)
-        ClearSave();
+    
+    SaveGame(board);
+
     return 0;
 }
