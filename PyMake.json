@@ -1,0 +1,20 @@
+{
+    "compiler": "g++",
+    "out": "game.out",
+    "warnings": false,
+    "libs": [
+        "raylib",
+        "GL",
+        "m",
+        "pthread",
+        "dl",
+        "rt",
+        "X11"
+    ],
+    "version": "c++23",
+    "file_types": [
+        ".cpp",
+        ".c"
+    ],
+    "wipe": false
+}
