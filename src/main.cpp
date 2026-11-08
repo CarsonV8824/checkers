@@ -4,6 +4,7 @@
 #include "../include/global.hpp"
 #include "../include/player.hpp"
 #include "../include/enemy.hpp"
+#include "../include/save.hpp"
 #include <vector>
 
 void DrawBackround()
@@ -123,7 +124,6 @@ std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::se
         if (pieceTypeVector[i] == EnemyPiece)
         {
 
-        
             if (set[i].size() >= length)
             {
                 length = set[i].size();
@@ -133,7 +133,7 @@ std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::se
         }
         else if (pieceTypeVector[i] == EnemyKing)
         {
-            if (set[i].size()/3 >= length)
+            if (set[i].size() / 2 >= length)
             {
                 length = set[i].size();
                 longest = set[i];
@@ -161,10 +161,43 @@ Vector2 GetMoveDestination(Vector2 start, std::set<std::pair<int, int>> theSet)
     return returnVec;
 }
 
+bool checkForWin(Board board[SIDE][SIDE])
+{
+    short unsigned playerPieces = 0;
+    short unsigned enemyPieces = 0;
+    for (int i = 0; i < SIDE; i++)
+    {
+        for (int j = 0; j < SIDE; j++)
+        {
+            if (board[i][j] == PlayerKing || board[i][j] == PlayerPiece)
+                playerPieces++;
+            if (board[i][j] == EnemyKing || board[i][j] == EnemyPiece)
+                enemyPieces++;
+        }
+    }
+    bool returnBool = !playerPieces || !enemyPieces;
+    return returnBool;
+}
+
 int main()
 {
+    SavedBoard savedBoard = loadGame();
     Board board[SIDE][SIDE];
-    InitBoard(board, SIDE);
+    if (!savedBoard.loaded)
+    {
+        InitBoard(board, SIDE);
+    }
+    else
+    {
+        for (int i = 0; i < SIDE; i++)
+        {
+            for (int j = 0; j < SIDE; j++)
+            {
+                board[i][j] = savedBoard.board[i][j];
+            }
+        }
+    }
+
     Vector2 lastPieceOn;
 
     unsigned turn = 0;
@@ -174,7 +207,8 @@ int main()
     InitWindow(ScreenSide, ScreenSide, "raylib [core] example - basic window");
 
     SetTargetFPS(60);
-
+    bool endCondition = false;
+    bool resetKeyPressed = false;
     while (!WindowShouldClose())
     {
         if (turn % 2 == 0)
@@ -224,9 +258,21 @@ int main()
         player::DrawMoveRects(possibleSpotsToMove);
 
         EndDrawing();
+
+        endCondition = checkForWin(board);
+        if (IsKeyPressed(KEY_R))
+        {
+            resetKeyPressed = true;
+            InitBoard(board, SIDE);
+        }
     }
 
     CloseWindow();
-
+    if (!endCondition)
+        SaveGame(board);
+    if (endCondition)
+        ClearSave();
+    if (resetKeyPressed)
+        ClearSave();
     return 0;
 }
