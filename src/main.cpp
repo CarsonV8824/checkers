@@ -85,10 +85,12 @@ void DrawPieces(Board board[][8], int n)
                 DrawRectangle(starting + pieceWidth / 2 + (j * backroundSide), starting + pieceWidth / 2 + (i * backroundSide), pieceWidth, pieceWidth, BLUE);
                 break;
             case PlayerKing:
-                DrawRectangle(starting + pieceWidth / 2 + (j * backroundSide), starting + pieceWidth / 2 + (i * backroundSide), pieceWidth, pieceWidth, PURPLE);
+                DrawRectangle(starting + pieceWidth / 2 + (j * backroundSide), starting + pieceWidth / 2 + (i * backroundSide), pieceWidth, pieceWidth, GREEN);
+                DrawRectangle(starting + pieceWidth / 1.5f + (j * backroundSide), starting + pieceWidth / 1.5f + (i * backroundSide), pieceWidth / 2, pieceWidth / 2, YELLOW);
                 break;
             case EnemyKing:
-                DrawRectangle(starting + pieceWidth / 2 + (j * backroundSide), starting + pieceWidth / 2 + (i * backroundSide), pieceWidth, pieceWidth, ORANGE);
+                DrawRectangle(starting + pieceWidth / 2 + (j * backroundSide), starting + pieceWidth / 2 + (i * backroundSide), pieceWidth, pieceWidth, BLUE);
+                DrawRectangle(starting + pieceWidth / 1.5f + (j * backroundSide), starting + pieceWidth / 1.5f + (i * backroundSide), pieceWidth / 2, pieceWidth / 2, YELLOW);
                 break;
             }
         }
@@ -256,7 +258,7 @@ int main()
         player::DrawMoveRects(possibleSpotsToMove);
 
         auto [tempCheck, playerPieces, enemyPieces] = checkForWin(board);
-        
+
         if (IsKeyPressed(KEY_R))
         {
             InitBoard(board, SIDE);
@@ -280,7 +282,7 @@ int main()
     }
 
     CloseWindow();
-    
+
     SaveGame(board);
 
     return 0;
