@@ -149,8 +149,6 @@ int main()
 {
     Board board[SIDE][SIDE];
     InitBoard(board, SIDE);
-    board[4][5] = EnemyPiece;
-    // board[4][3] = EnemyPiece;
     Vector2 lastPieceOn;
 
     unsigned turn = 0;
