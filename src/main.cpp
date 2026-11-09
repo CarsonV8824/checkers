@@ -6,6 +6,7 @@
 #include "../include/enemy.hpp"
 #include "../include/save.hpp"
 #include <vector>
+#include <cstdlib>
 
 void DrawBackround()
 {
@@ -97,6 +98,32 @@ void DrawPieces(Board board[][8], int n)
     }
 }
 
+void DrawGameCursor()
+{
+    const Vector2 mouse = GetMousePosition();
+    const Vector2 tip = mouse;
+    const Vector2 left = {mouse.x, mouse.y + 20};
+    const Vector2 notch = {mouse.x + 5, mouse.y + 15};
+    const Vector2 shaftLeft = {mouse.x + 9, mouse.y + 24};
+    const Vector2 shaftRight = {mouse.x + 13, mouse.y + 22};
+    const Vector2 shoulder = {mouse.x + 9, mouse.y + 13};
+    const Vector2 right = {mouse.x + 16, mouse.y + 13};
+
+    DrawTriangle(tip, left, notch, WHITE);
+    DrawTriangle(tip, notch, right, WHITE);
+    DrawTriangle(notch, shaftLeft, shaftRight, WHITE);
+    DrawTriangle(notch, shaftRight, shoulder, WHITE);
+    DrawTriangle(notch, shoulder, right, WHITE);
+
+    DrawLineEx(tip, left, 2, BLACK);
+    DrawLineEx(left, notch, 2, BLACK);
+    DrawLineEx(notch, shaftLeft, 2, BLACK);
+    DrawLineEx(shaftLeft, shaftRight, 2, BLACK);
+    DrawLineEx(shaftRight, shoulder, 2, BLACK);
+    DrawLineEx(shoulder, right, 2, BLACK);
+    DrawLineEx(right, tip, 2, BLACK);
+}
+
 std::vector<std::tuple<Vector2, Board>> GetEnemyPiecesIndexes(Board board[][8], int n)
 {
     std::vector<std::tuple<Vector2, Board>> indexes;
@@ -116,34 +143,47 @@ std::vector<std::tuple<Vector2, Board>> GetEnemyPiecesIndexes(Board board[][8], 
     return indexes;
 }
 
-std::tuple<std::set<std::pair<int, int>>, int> GetLongestSet(std::vector<std::set<std::pair<int, int>>> set, std::vector<Board> pieceTypeVector)
+std::tuple<std::set<std::pair<int, int>>, int>
+GetLongestSet(std::vector<std::set<std::pair<int, int>>> set,
+              std::vector<Board> pieceTypeVector)
 {
     unsigned length = 0;
-    int index = 0;
-    std::set<std::pair<int, int>> longest;
+
+    std::vector<
+        std::tuple<std::set<std::pair<int, int>>, int>>
+        longestPossibleCombos;
+
     for (unsigned i = 0; i < set.size(); i++)
     {
-        if (pieceTypeVector[i] == EnemyPiece)
-        {
+        unsigned currentLength = set[i].size();
 
-            if (set[i].size() >= length)
-            {
-                length = set[i].size();
-                longest = set[i];
-                index = static_cast<int>(i);
-            }
-        }
-        else if (pieceTypeVector[i] == EnemyKing)
+        if (pieceTypeVector[i] == EnemyKing)
         {
-            if ((int)(set[i].size() / 2.5f) >= length)
-            {
-                length = set[i].size();
-                longest = set[i];
-                index = static_cast<int>(i);
-            }
+            currentLength = static_cast<unsigned>(
+                currentLength / 3);
+        }
+
+        if (currentLength > length)
+        {
+            length = currentLength;
+
+            longestPossibleCombos.clear();
+
+            longestPossibleCombos.emplace_back(
+                set[i],
+                static_cast<int>(i));
+        }
+        else if (currentLength == length)
+        {
+            longestPossibleCombos.emplace_back(
+                set[i],
+                static_cast<int>(i));
         }
     }
-    return {longest, index};
+
+    int randomInRange = rand() % longestPossibleCombos.size();
+
+    return longestPossibleCombos[randomInRange];
 }
 
 Vector2 GetMoveDestination(Vector2 start, std::set<std::pair<int, int>> theSet)
@@ -206,7 +246,8 @@ int main()
 
     std::set<std::pair<int, int>> possibleSpotsToMove;
 
-    InitWindow(ScreenSide, ScreenSide, "raylib [core] example - basic window");
+    InitWindow(ScreenSide, ScreenSide, "Checkers");
+    HideCursor();
 
     SetTargetFPS(60);
     while (!WindowShouldClose())
@@ -278,6 +319,8 @@ int main()
             const static int size = MeasureText("You Won! Press r to restart", font);
             DrawText("You Won! Press r to restart", ScreenSide / 2 - size / 2, ScreenSide / 2, font, WHITE);
         }
+
+        DrawGameCursor();
         EndDrawing();
     }
 
